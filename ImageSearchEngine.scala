@@ -248,5 +248,118 @@ class ImageSearchEngine extends KoanSuite with ShouldMatchers {
 // END Part 2 Trait
 //=========================
 
+//=========================
+// Part 3 List/Map & high Order function
+//=========================
+
+	koan("Introducing List") {
+		case class Image(name: String = "Default name", score:Int = 0)
+	  
+		val imagesList = List(Image,Image,Image)
+		imagesList.size should be(3)
+		
+		//List are immutable
+		imagesList.drop(3)
+		imagesList.size should be(3)
+	}
+	
+	koan("Testing equalitty on List") {
+		case class Image(name: String = "Default name", score:Int = 0)
+	  
+		val imagesList = List(Image,Image,Image)
+		val imagesList2 = List(Image,Image,Image)
+		
+		imagesList == imagesList2 should be(true)
+		imagesList eq imagesList2 should be(false)
+	}
+	
+	koan("Some useful methods on List") {
+		case class Image(name: String = "Default name", score:Int = 0)
+	  
+		val imagesList = List(Image("I have my own name"),Image,Image)
+
+		//Removing duplicate
+		imagesList.distinct.size should be(2)
+		//Reversing the list order
+		imagesList.reverse should be(List(Image,Image,Image("I have my own name")))
+		//ToString
+		imagesList.toString should be("List(Image(I have my own name,0), Image, Image)")
+	}
+	
+	koan("Some useful methods on List with High Order Function") {
+		case class Image(name: String = "Default name", score:Int = 0)
+	  
+		val imagesList = List(Image("Sky",5),Image("Sea",8),Image("Mountain",6),Image("Sky",4))
+		
+		imagesList.filter(image => image.score > 7).size should be(1)
+		imagesList.filter(image => image.name == "Sea").size should be(1)
+		imagesList.filter(image => image.name == "Sky" && image.score > 4).size should be(1)
+	}
+	
+	koan("Adding some complexity") {
+		case class Image(name: String = "Default name", scores:List[Int])
+	  
+		val imagesList = List(Image("Sky", List(5,2,9,1)),Image("Sea",List(3,6,4,2)),Image("Mountain",List(9,6,4,3)))
+		
+		// Average score
+		// Sky => 4,25
+		// Sea => 3,75
+		// Mountain => 5,5
+		imagesList.filter(image => image.scores.sum/image.scores.size.toDouble > 5.00).size should be(1)
+	}
+	
+	koan("Applying a method on each list value") {
+	  	case class Image(name: String = "Default name", score:Int)
+	  	
+		val imagesList = List(Image("Sky",5),Image("Sea",8),Image("Mountain",6))
+		
+		//Let's cheat the scores
+		imagesList.map{image => image.score+1}.toString should be("List(6, 9, 7)")
+	}
+	
+//=========================
+// END Part 3 List/Map
+//=========================
+	
+//=========================
+// Part 4 Building some features for our app
+//=========================
+
+	koan("A basic search ordered by score"){
+	  	case class Image(name: String = "Default name", score:Int)
+		val imageList: List[Image] = List(Image("Sky",5),Image("Sea",8))
+		
+		def SearchExpression = {
+			expression:String => imageList.filter(image => image.name == expression).sortBy(image => image.score)
+		}
+
+	  	SearchExpression("Sky").size should be(1)
+	  	SearchExpression("Sea").size should be(1)
+	}
+	
+	koan("Generic filter & Currying"){
+		case class Image(name: String = "Default name", score:Int=0, tagsList:List[String]=Nil, author:String="Unknown User")
+		
+		val imageList:List[Image] = List(Image(score=2), Image(score=7),Image(score=6))
+		val minScore = 4
+
+		def customFilter(f: Image => Boolean)(imageList:List[Image]) = {
+			imageList.filter(f)
+		}
+		
+		def filterHighScore(image: Image):Boolean = image.score > minScore
+		def filterLowScore(image: Image):Boolean = image.score < minScore
+		
+		val highScores = customFilter(filterHighScore) _
+		val lowScores = customFilter(filterLowScore) _
+		
+		highScores(imageList).size should be(2)
+		lowScores(imageList).size should be(1)
+	}
+	
+	
+//=========================
+// Part 4 Building some feature for our app
+//=========================
 
 }
