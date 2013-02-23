@@ -337,7 +337,7 @@ class ImageSearchEngine extends KoanSuite with ShouldMatchers {
 	  	SearchExpression("Sea").size should be(1)
 	}
 	
-	koan("Generic filter & Currying"){
+	koan("Building a generic filter"){
 		case class Image(name: String = "Default name", score:Int=0, tagsList:List[String]=Nil, author:String="Unknown User")
 		
 		val imageList:List[Image] = List(Image(score=2), Image(score=7),Image(score=6))
@@ -357,9 +357,76 @@ class ImageSearchEngine extends KoanSuite with ShouldMatchers {
 		lowScores(imageList).size should be(1)
 	}
 	
+	koan("Partial function"){
+		case class Image(name: String = "Default name", imageType:String = "jpg")
+		
+		val imageList:List[Image] = List(Image(), Image(imageType="png"))
+		
+		def jpgFunction: PartialFunction[Image, Image] = new PartialFunction[Image, Image] {
+			def isDefinedAt(image: Image) = image.imageType == "jpg"
+	      
+	    	def apply(image: Image) = Image(name=image.name+".jpg")
+		}
+		
+		def pngFunction: PartialFunction[Image, Image] = new PartialFunction[Image, Image] {
+			def isDefinedAt(image: Image) = image.imageType == "png"
+	      
+	    	def apply(image: Image) = Image(name=image.name+".png")
+		}
+		
+		val genericFunction = jpgFunction orElse pngFunction
+		
+		genericFunction(imageList(0)).name should be("Default name.jpg")
+		genericFunction(imageList(1)).name should be("Default name.png")
+	}
 	
 //=========================
 // Part 4 Building some feature for our app
 //=========================
 
+	
+//=========================
+// Part 5 Pattern Matching / Option
+//=========================
+
+	koan("Pattern Matching"){
+		def makeSearch(search:String) = {
+		    search match {
+				case "Cloud" => "Processing search with word 'Cloud'"
+				case "Sky" => "Processing search with word 'Sky'"
+				case "Sun" => "Processing search with word 'Sun'"
+				case _ => "Couldn't find anything with the word: %s".format(search)
+		    }
+		}
+		
+		makeSearch("Sky") should be("Processing search with word 'Sky'")
+	}
+	
+	koan("Pattern Matching & option"){
+		def makeSearch(search:String):Option[String] = {
+		    search match {
+				case "Cloud" => Some("Processing search with word 'Cloud'")
+				case "Sky" => Some("Processing search with word 'Sky'")
+				case "Sun" => Some("Processing search with word 'Sun'")
+				case _ => None
+		    }
+		}
+
+		makeSearch("Sky").get should be("Processing search with word 'Sky'")
+		makeSearch("Rocket") should be(None)
+	}
+	
+	koan("Pattern Matching & option the other way"){
+		def makeSearch(search:Option[String]) = {
+		    search match {
+				case Some(search) => "Processing search with word '%s'".format(search)
+				case None => "Nothing to search"
+		    }
+		}
+
+		makeSearch(Some("Sky")) should be("Processing search with word 'Sky'")
+		makeSearch(None) should be("Nothing to search")
+	}
+	
+	
 }
